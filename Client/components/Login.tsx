@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+
 import { useRouter } from "next/router";
 import Image from "next/image";
 
@@ -15,14 +16,16 @@ const Login: React.FC = () => {
 
   const router = useRouter();
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
     const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     const isValidPassword = password.trim() !== "";
 
     if (isValidEmail && isValidPassword) {
       setLoading(true);
       try {
-        const response = await fetch("/login", {
+        const response = await fetch("http://localhost:8000/login", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -32,13 +35,13 @@ const Login: React.FC = () => {
         if (response.ok) {
           const data = await response.json();
           console.log("Login successful", data);
+          router.push("/home");
         } else {
           const errorData = await response.json();
           console.error("Login failed", errorData);
         }
       } catch (error) {
-        console.error("An error occurred");
-        router.push("/home");
+        alert("Something went wrong");
       }
     } else {
       alert("Invalid email or Password");
@@ -47,7 +50,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="max-h-screen flex items-center justify-center bg-blue-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div data-testid="login-component" className="max-h-screen flex items-center justify-center bg-blue-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="min-h-screen flex items-center justify-center bg-blue-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-rows-1 max-h-[800px] sm:grid-cols-12">
           <div className="w-full h-full rounded-l-xl col-span-5 hidden sm:flex relative">
@@ -67,7 +70,11 @@ const Login: React.FC = () => {
               />
             </div>
             <div className="sm:mt-20 my-10 sm:w-3/4 md:w-11/12 m-auto">
-              <form className="mx-2 grid grid-flow-row auto-rows-auto gap-4 content-evenly">
+              <form
+                data-testid="login-form"
+                className="mx-2 grid grid-flow-row auto-rows-auto gap-4 content-evenly"
+                onSubmit={handleSubmit}
+              >
                 <h1 className="text-[20px] text-textgrey px-2">
                   Sign in to your account
                 </h1>
@@ -91,11 +98,11 @@ const Login: React.FC = () => {
                     />
                     <span className="MaskIcon absolute top-[16%] right-[0.5%]">
                       {showPassword ? (
-                        <span onClick={() => setShowPassword(false)}>
+                        <span data-testid="show-password-button" onClick={() => setShowPassword(false)}>
                           <ShowPassword />
                         </span>
                       ) : (
-                        <span onClick={() => setShowPassword(true)}>
+                        <span data-testid="hide-password-button" onClick={() => setShowPassword(true)}>
                           <HidePassword />
                         </span>
                       )}
@@ -112,7 +119,7 @@ const Login: React.FC = () => {
 
                 <div className="grid grid-flow-col md:grid-cols-6 text-base px-2 gap-6">
                   <button
-                    onClick={handleSubmit}
+                    type="submit"
                     className="flex bg-cyan-600 text-lightblue hover:bg-secondary border border-lightblue hover:text-white border-secondary justify-center items-center font-bold text-sm rounded p-2 cursor-pointer flex-row xs:col-span-full md:col-span-6 md:self-end md:col-start-1"
                   >
                     Sign in
